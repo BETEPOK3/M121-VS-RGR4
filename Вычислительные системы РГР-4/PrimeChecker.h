@@ -12,7 +12,7 @@ class PrimeChecker
 	using ValueType = unsigned long long;
 
 	static const size_t PRIMES_NUM_COUNT = 203280221;
-	static const size_t threadCount = 1;
+	static const size_t threadCount = 16;
 	const unsigned long desiredCount;
 
 	std::mutex mutexCount;
