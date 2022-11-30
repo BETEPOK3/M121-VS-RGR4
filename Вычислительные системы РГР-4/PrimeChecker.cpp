@@ -31,11 +31,11 @@ PrimeChecker::PrimeChecker(const std::string filename, const PrimeCheckerData& d
 	unsigned int tempNum = (data.N + data.MM + data.DD) % 7;
 	if (tempNum > 3)
 	{
-		pc3 = static_cast<ValueType>(pow(3, 9 + tempNum));
+		pc3 = static_cast<ValueType>(pow(3, 7 + tempNum));
 	}
 	else
 	{
-		pc3 = static_cast<ValueType>(pow(3, 15 - tempNum));
+		pc3 = static_cast<ValueType>(pow(3, 13 - tempNum));
 	}
 }
 
@@ -55,27 +55,29 @@ bool PrimeChecker::isPrime(const ValueType& num) const
 	return true;
 }
 
-forward_list<PrimeChecker::ValueType> PrimeChecker::getMultipliers(const ValueType& num) const
+forward_list<pair<PrimeChecker::ValueType, size_t>> PrimeChecker::getMultipliers(ValueType num) const
 {
-	forward_list<ValueType> result;
-	ValueType leftOver = num;
-	for (const auto& prime : primes)
+	std::forward_list<pair<ValueType, size_t>> result;
+	auto it = primes.begin();
+	while (it < primes.end() && *it <= num)
 	{
-		ValueType mult = prime;
-		if (mult * mult > num)
+		ValueType mult = *it;
+		size_t power = 0;
+		while (num % mult == 0)
 		{
-			break;
+			++power;
+			mult *= *it;
 		}
-		while (mult <= num && num % mult == 0)
+		if (power > 0)
 		{
-			result.push_front(mult);
-			mult *= prime;
-			leftOver /= prime;
+			result.push_front(make_pair(*it, power));
 		}
+		num /= mult / *it;
+		++it;
 	}
-	if (leftOver != 1)
+	if (num > 1)
 	{
-		result.push_front(leftOver);
+		result.push_front(make_pair(num, 1));
 	}
 	return result;
 }
@@ -226,15 +228,16 @@ void PrimeChecker::printResult() const
 			const auto& [idx, val1, val2] = resultPrimes[i];
 			const auto& [lst1, lst2] = resultMultipliers[i];
 			cout << idx << ": " << val1 << ' ' << val2 << '\n';
-			const auto printList = [](const forward_list<ValueType>& listIn)
+			const auto printList = [](const forward_list<pair<ValueType, size_t>>& listIn)
 			{
 				cout << '[';
+				auto lst = *listIn.begin();
 				if (!listIn.empty())
 				{
-					cout << *listIn.begin();
+					cout << listIn.front().first << '^' << listIn.front().second;
 					for (auto it = ++listIn.begin(); it != listIn.end(); ++it)
 					{
-						cout << ", " << *it;
+						cout << ", " << (*it).first << '^' << (*it).second;
 					}
 				}
 				cout << "]\n";

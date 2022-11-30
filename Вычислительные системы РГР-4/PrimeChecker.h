@@ -23,13 +23,13 @@ class PrimeChecker
 
 	ValueType count = 0;
 	std::vector<std::tuple<size_t, ValueType, ValueType>> resultPrimes;
-	std::vector<std::pair<std::forward_list<ValueType>, std::forward_list<ValueType>>> resultMultipliers;
+	std::vector<std::pair<std::forward_list<std::pair<ValueType, size_t>>, std::forward_list<std::pair<ValueType, size_t>>>> resultMultipliers;
 
 public:
 	explicit PrimeChecker(const std::string filename, const PrimeCheckerData& data, const unsigned long& desCount = 15);
 
 	bool isPrime(const ValueType& num) const;
-	std::forward_list<ValueType> getMultipliers(const ValueType& num) const;
+	std::forward_list<std::pair<ValueType, size_t>> getMultipliers(ValueType num) const;
 
 	ValueType getPc2() const { return pc2; }
 	ValueType getPc3() const { return pc3; }
