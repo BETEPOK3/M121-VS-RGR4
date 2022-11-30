@@ -6,9 +6,13 @@ using namespace std;
 int main()
 {
 	ios_base::sync_with_stdio(false);
+	setlocale(0, "");
 
-	const PrimeCheckerData data = { 12, 24, 4, 2000 };
-	cout << "Reading file...\n";
+	PrimeCheckerData data;
+	cout << "Введите данные: N DD MM GGGG (Пример: 12 24 4 2000)\n";
+	cin >> data.N >> data.DD >> data.MM >> data.GGGG;
+	cout << "\nЧтение файла primes.dat...\n";
+
 	PrimeChecker primeChecker("primes.dat", data);
 
 	unsigned long long pc2 = primeChecker.getPc2();

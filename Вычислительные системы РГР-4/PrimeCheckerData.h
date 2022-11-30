@@ -3,11 +3,10 @@
 
 struct PrimeCheckerData
 {
-	using ValueType = unsigned long long;
-	ValueType N = 2;
-	ValueType DD = 2;
-	ValueType MM = 6;
-	ValueType GGGG = 2000;
+	unsigned long long N;
+	unsigned long long DD;
+	unsigned long long MM;
+	unsigned long long GGGG;
 };
 
 #endif
