@@ -10,7 +10,7 @@ int main()
 	setlocale(0, "");
 
 	PrimeCheckerData data;
-	cout << "Введите данные: N DD MM GGGG (Пример: 12 24 4 2000)\n";
+	cout << "Введите данные: N DD MM GGGG (Пример: 12 24 04 2000)\n";
 	cin >> data.N >> data.DD >> data.MM >> data.GGGG;
 
 	cout << "\nЧтение файла primes.dat...\n";

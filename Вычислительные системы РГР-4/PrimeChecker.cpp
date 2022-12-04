@@ -314,7 +314,7 @@ void PrimeChecker::printResultToCsv(ofstream& file) const
 		{
 			const auto& [idx, val1, val2] = resultPrimes[i];
 			const auto& [list1, list2] = resultMultipliers[i];
-			file << i << DELIM << idx << DELIM << val1 << DELIM;
+			file << i + 1 << DELIM << idx << DELIM << val1 << DELIM;
 			printList(list1);
 			file << val2 << DELIM;
 			printList(list2);
