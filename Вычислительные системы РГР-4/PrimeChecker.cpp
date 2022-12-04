@@ -276,7 +276,7 @@ void PrimeChecker::printResult() const
 		printList(list1);
 		printList(list2);
 	}
-	cout << '\n';
+	cout << "Total count: " << count << "\n\n";
 }
 
 void PrimeChecker::printResultToCsv(ofstream& file) const
