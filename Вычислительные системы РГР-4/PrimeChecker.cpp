@@ -85,6 +85,7 @@ forward_list<pair<PrimeChecker::ValueType, size_t>> PrimeChecker::getMultipliers
 void PrimeChecker::runPrimeCheck2(const ValueType& pc)
 {
 	count = 0;
+	maxDiff = { pc, 0 };
 	resultPrimes.clear();
 	resultMultipliers.clear();
 	resultPrimes.reserve(desiredCount);
@@ -119,6 +120,7 @@ void PrimeChecker::runPrimeCheck2(const ValueType& pc)
 	const auto func = [&](const ValueType idxStart, const ValueType& idxEnd)
 	{
 		ValueType myCount = 0;
+		ValueType myMaxDiff = 0;
 		for (ValueType i = idxStart; i < idxEnd; ++i)
 		{
 			ValueType val1 = pc - i;
@@ -126,10 +128,15 @@ void PrimeChecker::runPrimeCheck2(const ValueType& pc)
 			if (isPrime(val1) && isPrime(val2))
 			{
 				++myCount;
+				myMaxDiff = i;
 			}
 		}
 		mutexCount.lock();
 		count += myCount;
+		if (myMaxDiff > maxDiff.second)
+		{
+			maxDiff.second = myMaxDiff;
+		}
 		mutexCount.unlock();
 	};
 	ValueType idxStep = (pc - idxNextStart - 2) / threadCount;
@@ -149,6 +156,7 @@ void PrimeChecker::runPrimeCheck2(const ValueType& pc)
 void PrimeChecker::runPrimeCheck3(const ValueType& pc)
 {
 	count = 0;
+	maxDiff = { pc, 0 };
 	resultPrimes.clear();
 	resultMultipliers.clear();
 	resultPrimes.reserve(desiredCount);
@@ -185,6 +193,7 @@ void PrimeChecker::runPrimeCheck3(const ValueType& pc)
 	const auto func = [&](const ValueType idxStart, const ValueType& idxEnd)
 	{
 		ValueType myCount = 0;
+		ValueType myMaxDiff = 0;
 		for (ValueType i = idxStart; i < idxEnd; ++i)
 		{
 			ValueType val1 = pc - i;
@@ -192,10 +201,15 @@ void PrimeChecker::runPrimeCheck3(const ValueType& pc)
 			if (gcd(pc, val1) == 1 && gcd(pc, val2) == 1 && gcd(val1, val2) == 1)
 			{
 				++myCount;
+				myMaxDiff = i;
 			}
 		}
 		mutexCount.lock();
 		count += myCount;
+		if (myMaxDiff > maxDiff.second)
+		{
+			maxDiff.second = myMaxDiff;
+		}
 		mutexCount.unlock();
 	};
 	ValueType idxStep = (pc - idxNextStart - 2) / threadCount;
@@ -220,31 +234,103 @@ void PrimeChecker::printResult() const
 		{
 			cout << idx << ": " << val1 << ' ' << val2 << '\n';
 		}
+
+		// Последнее значение
+		const ValueType& idx = maxDiff.second;
+		const ValueType val1 = maxDiff.first - idx;
+		const ValueType val2 = maxDiff.first + idx;
+		cout << "...\n" << idx << ": " << val1 << ' ' << val2 << '\n';
 	}
 	else
+	{
+		const auto printList = [](const forward_list<pair<ValueType, size_t>>& listIn)
+		{
+			cout << '[';
+			auto lst = *listIn.begin();
+			if (!listIn.empty())
+			{
+				cout << listIn.front().first << '^' << listIn.front().second;
+				for (auto it = ++listIn.begin(); it != listIn.end(); ++it)
+				{
+					cout << ", " << (*it).first << '^' << (*it).second;
+				}
+			}
+			cout << "]\n";
+		};
+		for (size_t i = 0; i < resultPrimes.size(); ++i)
+		{
+			const auto& [idx, val1, val2] = resultPrimes[i];
+			const auto& [list1, list2] = resultMultipliers[i];
+			cout << idx << ": " << val1 << ' ' << val2 << '\n';
+			printList(list1);
+			printList(list2);
+		}
+
+		// Последнее значение
+		const ValueType& idx = maxDiff.second;
+		const ValueType val1 = maxDiff.first - idx;
+		const ValueType val2 = maxDiff.first + idx;
+		const forward_list<pair<ValueType, size_t>> list1 = getMultipliers(val1);
+		const forward_list<pair<ValueType, size_t>> list2 = getMultipliers(val2);
+		cout << "...\n" << idx << ": " << val1 << ' ' << val2 << '\n';
+		printList(list1);
+		printList(list2);
+	}
+	cout << '\n';
+}
+
+void PrimeChecker::printResultToCsv(ofstream& file) const
+{
+	if (resultMultipliers.empty())
 	{
 		for (size_t i = 0; i < resultPrimes.size(); ++i)
 		{
 			const auto& [idx, val1, val2] = resultPrimes[i];
-			const auto& [lst1, lst2] = resultMultipliers[i];
-			cout << idx << ": " << val1 << ' ' << val2 << '\n';
-			const auto printList = [](const forward_list<pair<ValueType, size_t>>& listIn)
-			{
-				cout << '[';
-				auto lst = *listIn.begin();
-				if (!listIn.empty())
-				{
-					cout << listIn.front().first << '^' << listIn.front().second;
-					for (auto it = ++listIn.begin(); it != listIn.end(); ++it)
-					{
-						cout << ", " << (*it).first << '^' << (*it).second;
-					}
-				}
-				cout << "]\n";
-			};
-			printList(lst1);
-			printList(lst2);
+			file << i + 1 << DELIM << idx << DELIM << val1 << DELIM << val2 << '\n';
 		}
+
+		// Последнее значение
+		const ValueType& idx = maxDiff.second;
+		const ValueType val1 = maxDiff.first - idx;
+		const ValueType val2 = maxDiff.first + idx;
+		file << "...\n" << count << DELIM << idx << DELIM << val1 << DELIM << val2 << "\n\n";
 	}
-	cout << count << "\n\n";
+	else
+	{
+		const auto printList = [&file](const forward_list<pair<ValueType, size_t>>& listIn)
+		{
+			auto lst = *listIn.begin();
+			if (!listIn.empty())
+			{
+				file << listIn.front().first << '^' << listIn.front().second;
+				for (auto it = ++listIn.begin(); it != listIn.end(); ++it)
+				{
+					file << " * " << (*it).first << '^' << (*it).second;
+				}
+			}
+			file << DELIM;
+		};
+		for (size_t i = 0; i < resultPrimes.size(); ++i)
+		{
+			const auto& [idx, val1, val2] = resultPrimes[i];
+			const auto& [list1, list2] = resultMultipliers[i];
+			file << i << DELIM << idx << DELIM << val1 << DELIM;
+			printList(list1);
+			file << val2 << DELIM;
+			printList(list2);
+			file << '\n';
+		}
+
+		// Последнее значение
+		const ValueType& idx = maxDiff.second;
+		const ValueType val1 = maxDiff.first - idx;
+		const ValueType val2 = maxDiff.first + idx;
+		const forward_list<pair<ValueType, size_t>> list1 = getMultipliers(val1);
+		const forward_list<pair<ValueType, size_t>> list2 = getMultipliers(val2);
+		file << "...\n" << count << DELIM << idx << DELIM << val1 << DELIM;
+		printList(list1);
+		file << val2 << DELIM;
+		printList(list2);
+		file << "\n\n";
+	}
 }

@@ -13,6 +13,7 @@ class PrimeChecker
 
 	static const size_t PRIMES_NUM_COUNT = 203280221;
 	static const size_t threadCount = 16;
+	static const char DELIM = ';';
 	const unsigned long desiredCount;
 
 	std::mutex mutexCount;
@@ -24,6 +25,7 @@ class PrimeChecker
 	ValueType count = 0;
 	std::vector<std::tuple<size_t, ValueType, ValueType>> resultPrimes;
 	std::vector<std::pair<std::forward_list<std::pair<ValueType, size_t>>, std::forward_list<std::pair<ValueType, size_t>>>> resultMultipliers;
+	std::pair<ValueType, ValueType> maxDiff{ 0,0 };
 
 public:
 	explicit PrimeChecker(const std::string filename, const PrimeCheckerData& data, const unsigned long& desCount = 15);
@@ -38,6 +40,7 @@ public:
 	void runPrimeCheck3(const ValueType& pc);
 
 	void printResult() const;
+	void printResultToCsv(std::ofstream& file) const;
 };
 
 #endif
